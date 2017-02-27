@@ -8,6 +8,8 @@ var io = require('socket.io')(server);
 var bodyParser = require('body-parser');
 app.use(bodyParser.json());
 
+var path = require('path');
+
 app.set('port', (process.env.PORT || 3001));
 
 // Database set up
@@ -27,8 +29,8 @@ app.use('/api', api);
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static('client/build'));
 
-  app.get('*', function (request, response){
-    response.sendFile(path.resolve(__dirname, 'client/build', 'index.html'));
+  app.get('*', function (req, res){
+    res.sendFile(path.resolve(__dirname, 'client/build', 'index.html'));
   });
 }
 
