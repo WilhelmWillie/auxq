@@ -1,0 +1,141 @@
+import React, { Component } from 'react';
+
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+
+import Song from './Song';
+import AddSong from './AddSong';
+import EmptyQueue from './EmptyQueue';
+
+import Client from '../Client';
+
+import io from 'socket.io-client';
+
+class SongQueue extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      songs: []
+    };
+
+    Client.getSongQueue(this.props.params.id, (songQ) => {
+      if (songQ.doesNotExist) {
+        this.props.router.push('/join?invalid=true&bad_id=' + this.props.params.id);
+      } else {
+        this.setState({
+          songs: songQ.songs
+        })
+      }
+    });
+
+    this.delete = this.delete.bind(this);
+    this.push = this.push.bind(this);
+
+    this.socket = io('/');
+    this.master = this.props.route.master;
+    this.masterKey = this.props.location.query.key;
+
+    Client.checkMasterKey(this.props.params.id, this.masterKey, (resp) => {
+      if (resp.isMaster === false) {
+        this.props.router.push('/q/' + this.props.params.id);
+        this.master = false;
+      }
+    });
+  }  
+
+  componentDidMount() {
+    // On connection, send a signal to join the queue's stream
+    this.socket.on('connect', data => {
+      this.socket.emit('joinQ', this.props.params.id);
+    });
+
+    // When we receive a 'song:add' symbol, add the data to our song array
+    this.socket.on('song:add', this.push);
+
+    // When we receive a 'song:remove' symbol, remove the song from the array
+    this.socket.on('song:remove', this.delete);
+  }
+
+  // Delete element in the specified index
+  delete(_id) {
+    this.setState({
+      songs: this.state.songs.filter((song, i) => song._id !== _id)
+    });
+  }
+
+  // Add new songs to the song array
+  push(data) {
+    const _songs = this.state.songs;
+    _songs.push(data);
+
+    this.setState({
+      songs: _songs
+    })
+  }
+
+  render() {
+    const songs = this.state.songs.map((song, i) => (
+      <Song
+        key={song._id}
+        song={song}
+        index={i}
+        socket={this.socket}
+        qId={this.props.params.id}
+        masterKey={this.masterKey}
+        isMaster={this.master}
+      />
+    ));
+ 
+    return (
+      <div id='songQueue'>
+        <div className='container'>
+          <div className='col-md-5 col-md-push-7'>
+            <div className='panel panel-default'>
+              <div className='panel-heading'>
+                <h4>AuxQ ID: {this.props.params.id}</h4>
+              </div>
+
+              <div className='panel-body'>
+                <label>Share URL (Share with friends)</label>
+
+                <input className='form-control' type='text' value={window.location.host + '/q/' + this.props.params.id} readOnly></input>
+
+                {(this.master === false) ? (
+                  <div>
+                    <br/>
+
+                    <label>Master URL (Keep for yourself)</label>
+
+                    <input className='form-control' type='text' value={window.location.host + '/q/' + this.props.params.id + '/master?key=' + this.masterKey} readOnly></input>
+                  </div>
+                ) : (null)}
+              </div>
+            </div>
+
+            <AddSong socket={this.socket} qId={this.props.params.id} />
+          </div>
+
+          <div className='col-md-7 col-md-pull-5'>
+            {(this.state.songs.length !== 0) ? (
+              <ReactCSSTransitionGroup
+                transitionName='fade'
+                transitionEnterTimeout={500}
+                transitionLeaveTimeout={500}>
+                {songs}
+              </ReactCSSTransitionGroup>
+            ) : (
+              <ReactCSSTransitionGroup
+                transitionName='fade'
+                transitionEnterTimeout={500}
+                transitionLeaveTimeout={500}>
+                <EmptyQueue key='emptyQueue'/>
+              </ReactCSSTransitionGroup>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+export default SongQueue;

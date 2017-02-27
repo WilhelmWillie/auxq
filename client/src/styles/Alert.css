@@ -1,0 +1,18 @@
+.alert-enter {
+  opacity: 0.01;
+  overflow: hidden;
+}
+
+.alert-enter.alert-enter-active {
+  opacity: 1;
+  transition: all 1s;
+}
+
+.alert-leave {
+  opacity: 1;
+}
+
+.alert-leave.alert-leave-active {
+  opacity: 0.01;
+  transition: all 1s ease-in;
+}

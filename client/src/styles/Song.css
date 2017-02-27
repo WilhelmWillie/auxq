@@ -1,0 +1,27 @@
+.song {
+  overflow: hidden;
+}
+
+.yt {
+  width: 100%;
+}
+
+.fade-enter {
+  opacity: 0.01;
+}
+
+.fade-enter.fade-enter-active {
+  opacity: 1;
+  transition: all 500ms ease-in;
+}
+
+.fade-leave {
+  opacity: 1;
+  max-height: 1000px;
+}
+
+.fade-leave.fade-leave-active {
+  opacity: 0.01;
+  max-height: 0;
+  transition: all 500ms ease-in;
+}
