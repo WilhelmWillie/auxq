@@ -15,7 +15,9 @@ class SongQueue extends Component {
     super(props)
 
     this.state = {
-      songs: []
+      songs: [],
+      master: this.props.route.master,
+      masterKey: this.props.location.query.key
     };
 
     Client.getSongQueue(this.props.params.id, (songQ) => {
@@ -32,18 +34,24 @@ class SongQueue extends Component {
     this.push = this.push.bind(this);
 
     this.socket = io('/');
-    this.master = this.props.route.master;
-    this.masterKey = this.props.location.query.key;
-
-    Client.checkMasterKey(this.props.params.id, this.masterKey, (resp) => {
-      if (resp.isMaster === false) {
-        this.props.router.push('/q/' + this.props.params.id);
-        this.master = false;
-      }
-    });
   }  
 
   componentDidMount() {
+    // Ping the server and check to make sure the master key works
+    Client.checkMasterKey(this.props.params.id, this.state.masterKey, (resp) => {
+      if (resp.isMaster === false) {
+        this.props.router.push('/q/' + this.props.params.id);
+
+        this.setState({
+          master: false
+        })
+      } else {
+        this.setState({
+          master: true
+        })
+      }
+    });
+
     // On connection, send a signal to join the queue's stream
     this.socket.on('connect', data => {
       this.socket.emit('joinQ', this.props.params.id);
@@ -81,8 +89,8 @@ class SongQueue extends Component {
         index={i}
         socket={this.socket}
         qId={this.props.params.id}
-        masterKey={this.masterKey}
-        isMaster={this.master}
+        masterKey={this.state.masterKey}
+        isMaster={this.state.master}
       />
     ));
  
@@ -100,13 +108,13 @@ class SongQueue extends Component {
 
                 <input className='form-control' type='text' value={window.location.host + '/q/' + this.props.params.id} readOnly></input>
 
-                {(this.master === false) ? (
+                {(this.state.master === true) ? (
                   <div>
                     <br/>
 
                     <label>Master URL (Keep for yourself)</label>
 
-                    <input className='form-control' type='text' value={window.location.host + '/q/' + this.props.params.id + '/master?key=' + this.masterKey} readOnly></input>
+                    <input className='form-control' type='text' value={window.location.host + '/q/' + this.props.params.id + '/master?key=' + this.state.masterKey} readOnly></input>
                   </div>
                 ) : (null)}
               </div>
