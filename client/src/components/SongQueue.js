@@ -135,7 +135,7 @@ class SongQueue extends Component {
                 transitionName='fade'
                 transitionEnterTimeout={500}
                 transitionLeaveTimeout={500}>
-              {(this.state.songs.length !== 0) ? ({songs}) : ( <EmptyQueue key='emptyQueue'/>)}
+              {(this.state.songs.length !== 0) ? (songs) : (<EmptyQueue key='emptyQueue'/>)}
             </ReactCSSTransitionGroup>
           </div>
         </div>
