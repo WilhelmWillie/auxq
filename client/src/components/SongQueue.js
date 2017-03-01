@@ -5,6 +5,7 @@ import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Song from './Song';
 import AddSong from './AddSong';
 import EmptyQueue from './EmptyQueue';
+import Alert from './Alert';
 
 import Client from '../Client';
 
@@ -112,6 +113,12 @@ class SongQueue extends Component {
                   <div>
                     <br/>
 
+                    <Alert message={'You are the master of this AuxQ! ' +
+                'This means you are the main source of audio and can delete songs. ' +
+                'Only way to access the master page is to use the master URL. ' +
+                'Keep this to yourself or to people you trust with control!'} 
+                type='info' key='errorAlert'/>  
+
                     <label>Master URL (Keep for yourself)</label>
 
                     <input className='form-control' type='text' value={window.location.host + '/q/' + this.props.params.id + '/master?key=' + this.state.masterKey} readOnly></input>
@@ -124,21 +131,12 @@ class SongQueue extends Component {
           </div>
 
           <div className='col-md-7 col-md-pull-5'>
-            {(this.state.songs.length !== 0) ? (
-              <ReactCSSTransitionGroup
+            <ReactCSSTransitionGroup
                 transitionName='fade'
                 transitionEnterTimeout={500}
                 transitionLeaveTimeout={500}>
-                {songs}
-              </ReactCSSTransitionGroup>
-            ) : (
-              <ReactCSSTransitionGroup
-                transitionName='fade'
-                transitionEnterTimeout={500}
-                transitionLeaveTimeout={500}>
-                <EmptyQueue key='emptyQueue'/>
-              </ReactCSSTransitionGroup>
-            )}
+              {(this.state.songs.length !== 0) ? ({songs}) : ( <EmptyQueue key='emptyQueue'/>)}
+            </ReactCSSTransitionGroup>
           </div>
         </div>
       </div>
