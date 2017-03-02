@@ -8,5 +8,7 @@ AuxQ is a service that allows you to crowdsource the aux cord and let your frien
 
 ## How AuxQ Was built
 **Front End:** React, Sockets.io
+
 **Back End:** Node.js, Express, MongoDB
+
 **Deployment:** Heroku, mLab (for MongoDB hosting)
